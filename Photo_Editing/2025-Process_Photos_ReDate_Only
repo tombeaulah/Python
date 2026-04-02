@@ -1,0 +1,19 @@
+from pathlib import Path
+import subprocess, shlex, os
+import shutil
+
+
+exiftool = r"C:\Program Files\Exiftools\exiftool.exe"
+
+target = Path(r"C:\Users\tombe\Pictures\Miscellaneous\To Allocate")
+
+new_date = "20160301 12:00:00"
+
+cmd = [
+    exiftool,
+    "-overwrite_original",             # modify in place
+    f"-AllDates={new_date}",           # sets DateTimeOriginal, CreateDate, ModifyDate
+    str(target / "*.jpg")              # wildcard pattern
+]
+
+subprocess.run(cmd, check=True)

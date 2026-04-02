@@ -1,0 +1,82 @@
+# Load libraries
+import pandas as pd
+import seaborn as sns
+import numpy as np
+pip install requests pandas
+
+
+import requests
+import pandas as pd
+
+url = "https://api.nobelprize.org/2.1/laureates"
+response = requests.get(url)
+response.raise_for_status()
+
+data = response.json()
+df = pd.json_normalize(data["laureates"])
+df.to_csv("nobel.csv", index=False)
+
+print("😀 Data saved to nobel.csv")
+
+
+url = "http://api.nobelprize.org/v1/laureate.csv?gender=All"
+headers = {"accept": "application/json"}
+response = requests.get(url, headers=headers)
+print(response.text)
+
+
+
+nobel_df = pd.read_csv("nobel.csv")
+nobel_df
+nobel_df["decade"] = 10* (nobel_df["year"]//10)
+
+# Make a new nobel df with only actual individuals present, so removing organziaations that were awarded nobel prizes
+nobel_df_people = nobel_df[nobel_df["laureate_type"] == "Individual"]
+# Assess which gender received the most nobel prize
+top_gender = nobel_df_people["sex"].value_counts().idxmax()
+print(top_gender)
+
+# Assess the most commonly occuring birth country of nobel laureates
+top_country = nobel_df_people["birth_country"].value_counts().idxmax()
+print(top_country)
+
+# Assess which decade had the highest ratio of US-born nobel laureates over all categories
+
+#top_US_decade = nobel_df_people["birth_country"].value_counts(normalize=True, bins=13)
+nobel_df_people["decade"] = 10* (nobel_df_people["year"]//10)
+decade_country_df = nobel_df_people.groupby("decade")["birth_country"].value_counts(normalize=True).reset_index(name="proportion")
+
+max_decade_usa = decade_country_df[decade_country_df["birth_country"]=="United States of America"].nlargest(1, "proportion")["decade"].iloc[0]
+
+max_decade_usa
+
+
+# Assess the decade and prize category combination with the highest proportion of female laureates
+# This was changed from using nobel_df_people to nobel_df because otherwise "peace" and "literature" were joint top, whereas the DataCamp model assesses the answer as "literature".  Using the full nobel_df corrects this, though I contend that organizations should be removed from the data if we are only looking at gender
+
+total_counts = nobel_df.value_counts(["decade", "category"])
+female_counts = nobel_df.query("sex == 'Female'").value_counts(["decade", "category"])
+female_proportion = (female_counts / total_counts).reset_index(name="female_share")
+max_female = female_proportion.sort_values("female_share", ascending=False).head(1)
+
+print(max_female)
+max_female_dict = {}
+max_female_dict[max_female["decade"].iloc[0]] = max_female["category"].iloc[0]
+max_female_dict
+
+# assess first woman to receive a prize and also record the category
+first_woman = nobel_df_people[nobel_df_people["sex"]=="Female"].sort_values("year", ascending = True).head(1)
+first_woman_name = first_woman["full_name"].iloc[0]
+first_woman_category = first_woman["category"].iloc[0]
+
+# assess individuals or organizations winning more than one prize
+nobel_df_counted = nobel_df.value_counts("full_name").reset_index(name = "count")
+repeat_list = nobel_df_counted["full_name"][nobel_df_counted["count"]>1].to_list()
+repeat_list
+
+['Comité international de la Croix Rouge (International Committee of the Red Cross)',
+ 'Office of the United Nations High Commissioner for Refugees (UNHCR)',
+ 'Frederick Sanger',
+ 'Linus Carl Pauling',
+ 'John Bardeen',
+ 'Marie Curie, née Sklodowska']

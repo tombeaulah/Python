@@ -1,0 +1,142 @@
+# Import necessary libraries
+import pandas as pd
+
+# Load the dataset
+ds_jobs = pd.read_csv("customer_train.csv")
+
+# View the dataset
+ds_jobs.head()
+
+print(ds_jobs_transformed.info())
+# examining the ds_jobs_transformed it is possible to see that many columns have missing values.
+# However, given the project goal is memory rather than cleaning, and that missing data might be valuable down-stream to the modelling no cleaning of missing data will be done.
+
+# iterate columns to see characteristics of them
+
+for col in ds_jobs_transformed:
+    print (f"Value_counts() of {col}")
+    print ( ds_jobs_transformed[col].value_counts(dropna=False) )
+    print (f"Number unqiue values: {ds_jobs_transformed[col].nunique()}")
+    print (f"Number missing values:{ds_jobs_transformed[col].isna().sum()}")
+    print (ds_jobs_transformed[col].info())
+    print ("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+
+
+
+# STUDENT ID
+
+# student_ID must be converted to int32
+ds_jobs_transformed["student_id"] = ds_jobs_transformed["student_id"].astype("int32")
+
+# CITY
+
+# city is best converted to a catergorical
+ds_jobs_transformed["city"] = ds_jobs_transformed["city"].astype("category")
+
+# CITY DEVELOPMENT INDEX
+
+# city_development_index must be converted to float16
+ds_jobs_transformed["city_development_index"] = ds_jobs_transformed["city_development_index"].astype("float16")
+
+# GENDER
+
+# gender is best converted to a categorical
+ds_jobs_transformed["gender"] = ds_jobs_transformed["gender"].astype("category")
+# RELEVANT EXPERIENCE
+
+# relevant_experience is best converted to a catergorical
+ds_jobs_transformed["relevant_experience"] = ds_jobs_transformed["relevant_experience"].astype("category")
+ds_jobs_transformed["relevant_experience"].cat.reorder_categories(new_categories=["No relevant experience","Has relevant experience"],ordered=True,inplace=True)
+
+# ENROLLED UNIVERSITY
+
+# enrolled_university is best converted to a categorical
+ds_jobs_transformed["enrolled_university"] = ds_jobs_transformed["enrolled_university"].astype("category")
+
+# EDUCATION LEVEL
+
+# education_level is best converted to a categorical
+ds_jobs_transformed["education_level"] = ds_jobs_transformed["education_level"].astype("category")
+ds_jobs_transformed["education_level"].cat.reorder_categories(new_categories=["Primary School","High School","Graduate","Masters","Phd"],ordered=True,inplace=True)
+
+# MAJOR DISCIPLINE
+
+# major_discipline is best converted to a catergorical
+ds_jobs_transformed["major_discipline"] = ds_jobs_transformed["major_discipline"].astype("category")
+
+# EXPERIENCE
+
+# experience is best converted to a catergorical
+# handle the <1 and >20 values, ready for conversion
+#now change the type
+ds_jobs_transformed["experience"] = ds_jobs_transformed["experience"].astype("category")
+
+remove_list = ["<1"] + [str(i) for i in range(1,10)]
+order_list = [str(i) for i in range (10,21)] + [">20"]
+
+ds_jobs_transformed["experience"] = ds_jobs_transformed["experience"].cat.remove_categories(removals=remove_list)
+ds_jobs_transformed["experience"]  = ds_jobs_transformed["experience"].cat.reorder_categories(new_categories=order_list,ordered=True)
+
+#drop missing values
+ds_jobs_transformed = ds_jobs_transformed.dropna(subset=["experience"])
+
+# COMPANY SIZE
+
+# company_size is best converted to a categorical
+
+ds_jobs_transformed["company_size"] = ds_jobs_transformed["company_size"].astype("category")
+company_size_map = ["1000-4999","5000-9999","10000+"]
+ds_jobs_transformed["company_size"].cat.set_categories(new_categories=company_size_map, ordered=True,inplace=True)
+
+ds_jobs_transformed = ds_jobs_transformed.dropna(subset=["company_size"])
+
+# LAST NEW JOB
+
+# last_new_job best converted to a categorical ordered
+ds_jobs_transformed["last_new_job"] = ds_jobs_transformed["last_new_job"].astype("category")
+ds_jobs_transformed["last_new_job"].cat.reorder_categories(new_categories=["never","1","2","3","4",">4"],ordered=True,inplace=True)
+
+
+
+# TRAINING HOURS
+
+# simple conversion of training_hours to int32
+ds_jobs_transformed["training_hours"] = ds_jobs_transformed["training_hours"].astype("int32")
+
+# JOB CHANGE
+
+# convert job_change (looking for job) to boolean
+ds_jobs_transformed["job_change"] = ds_jobs_transformed["job_change"].astype("boolean")
+
+# FINAL FILTERING
+
+
+#ds_jobs_transformed = ds_jobs_transformed[ ds_jobs_transformed["experience"] >=10 & #ds_jobs_transformed["company_size"] >= 1000]
+
+# EXPERIMENITATION
+
+
+# iterate columns to see characteristics of them
+
+for col in ds_jobs_transformed:
+    print (f"Value_counts() of {col}")
+    print ( ds_jobs_transformed[col].value_counts(dropna=False) )
+    print (f"Number unqiue values: {ds_jobs_transformed[col].nunique()}")
+    print (f"Number missing values:{ds_jobs_transformed[col].isna().sum()}")
+    print (ds_jobs_transformed[col].info())
+    print ("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+
+
+print(ds_jobs.memory_usage())
+mem1 = ds_jobs.memory_usage().sum()
+print(f"Total memory usage:{mem1}")
+
+print("***************************************************************************************")
+
+print(ds_jobs_transformed.memory_usage())
+mem2 = ds_jobs_transformed.memory_usage().sum()
+print(f"Total memory usage:{mem2}")
+
+print("***************************************************************************************")
+
+print(f"Improvement factor in memory usage:{mem1/mem2}")
