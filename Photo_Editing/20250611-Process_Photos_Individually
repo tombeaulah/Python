@@ -1,0 +1,70 @@
+from pathlib import Path
+import subprocess, shlex, os
+import shutil
+import csv
+
+#Code created 6th November 2025
+#The code will move files from one source folder to the target folder
+#The code then re-dates the photos using the "Date" Parameter so that they show in the correct order within Google Photos
+
+
+exiftool = r"C:\Program Files\Exiftools\exiftool.exe"
+source = Path(r"C:\Users\tombe\Pictures\Miscellaneous\Scanned Photos\2025-Processing")
+target = Path(r"C:\Users\tombe\Pictures\Miscellaneous\Scanned Photos\Random")
+ext = ".jpg"  
+
+
+
+
+#################################################################################################
+# --- read CSV and process ---
+csv_file = r"C:\Users\tombe\Downloads\Data.csv"
+
+#This version of code can deal with the .jpg extension and makes suree the code recognises 
+# filenames where the csv "Data" file does nopt show the .jpg extension explicitly, 
+# however, if the code sees no actual "New Name" then the original will be used without 
+# ADDING a new .jpg extension to the filename
+
+with open(csv_file, newline="", encoding="utf-8") as f:
+    reader = csv.DictReader(f)
+    for row in reader:
+        orig_name = row["Original Name"]
+        new_name = row.get("New Name") or orig_name
+        date = row["DateTimeOriginal"]
+
+        # Add .jpg if not already present
+        if not orig_name.lower().endswith(".jpg"):
+            orig_name += ".jpg"
+        if not new_name.lower().endswith(".jpg"):
+            new_name += ".jpg"
+
+        orig_path = source / orig_name
+        new_path = source / new_name
+
+        if orig_path.exists():
+            if orig_path != new_path:
+                print(f"Renaming {orig_name} → {new_name}")
+                orig_path.rename(new_path)
+        else:
+            print(f"⚠️ File not found: {orig_path}")
+
+        # Update EXIF date
+        cmd = [
+            exiftool,
+            "-overwrite_original",
+            f"-AllDates={date}",
+            str(new_path)
+        ]
+        subprocess.run(cmd, check=True)
+        print(f"Updated EXIF for {new_name} → {date}")
+
+
+#Now move the files
+
+#This code is for straight moving with no renaming
+
+for file_path in sorted(source.glob(f"*{ext}")):
+    dest_path = target / file_path.name
+    shutil.move(file_path, dest_path)
+    print(f"Moved {file_path.name}")
+    

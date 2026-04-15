@@ -1,0 +1,1 @@
+exiftool -overwrite_original -AllDates="2001:07:01 12:00:00" "C:/Users/tombe/Pictures/Miscellaneous/Scanned Photos/20010701-Meaux_Machinery_Day/*.jpg"

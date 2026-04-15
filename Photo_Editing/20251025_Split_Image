@@ -1,0 +1,24 @@
+from PIL import Image
+
+# Open your tall image
+img = Image.open(r"C:\Users\tombe\Documents\PythonProjects\liver_test.jpg")
+
+# Decide how many parts to split into
+num_splits = 3  # can change to 2 if you prefer
+
+width, height = img.size
+split_height = height // num_splits
+
+for i in range(num_splits):
+    # Calculate crop box (left, upper, right, lower)
+    upper = i * split_height
+    lower = (i + 1) * split_height if i < num_splits - 1 else height
+    box = (0, upper, width, lower)
+
+    # Crop and save each part
+    part = img.crop(box)
+    part.save(f"liver_test_part{i+1}.jpg", quality=90, optimize=True)
+
+print(f"✅ Done! Saved {num_splits} images:")
+for i in range(num_splits):
+    print(f"  liver_test_part{i+1}.jpg")
